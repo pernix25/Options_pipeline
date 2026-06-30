@@ -1,4 +1,5 @@
 /*2026-06-28 MC: Created stocks.stocks table
+2026-06-29 MC: Added the current timestamp as a defualt value for load_dts
 
 
 
@@ -12,5 +13,5 @@ create table stocks.stocks(
   stock_id serial primary key
   , ticker varchar(6)
   , stock_nm varchar(16)
-  , load_dts timestampz
+  , load_dts timestamptz default current_timestamp
 );
