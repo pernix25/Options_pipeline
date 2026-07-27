@@ -2,4 +2,4 @@
 Production-style financial data pipeline built with Python, PostgreSQL, and AWS. Automatically ingests stock and options market data through a modular ETL process and stores it in a PostgreSQL database on an AWS EC2 instance, enabling scalable data engineering and historical market analysis.
 
 Getting Started:
-  Update the keys in config.template.json to your own AWS EC2 & Postgres information and rename the file to 'config.json'.
+  Update the keys in config.template.json to your own AWS EC2 & Postgres information, then rename the file to 'config.json'.
