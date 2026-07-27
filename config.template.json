@@ -1,0 +1,12 @@
+{
+    "ssh": {
+        "host": ""
+        , "user": ""
+        , "key path": ""
+    }
+    , "database" : {
+        "name": ""
+        , "user": ""
+        , "password": ""
+    }
+}
