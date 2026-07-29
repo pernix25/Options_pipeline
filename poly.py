@@ -4,9 +4,19 @@
 from polygon import RESTClient
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import json
 
 class PolygonClient:
-    def __init__(self, api_key:str) -> None:
+    def __init__(
+            self
+            , config_path="./Options_pipeline/config.json"
+        ) -> None:
+        
+        # Load configuration
+        with open(config_path, "r") as file:
+            config = json.load(file)
+        
+        api_key = config["polygon"]["api key"]
         self.client = RESTClient(api_key)
 
     def get_option_chain(

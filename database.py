@@ -1,6 +1,7 @@
 # 2026-07-26 MC: Created file
 
 import psycopg
+from psycopg import Cursor
 from sshtunnel import SSHTunnelForwarder
 import json
 
@@ -10,7 +11,11 @@ class PostgresDatabase:
     Handles SSH tunnel creation and PostgreSQL connections.
     """
 
-    def __init__(self, config_path="./Options_pipeline/config.json"):
+    def __init__(
+            self
+            , config_path="./Options_pipeline/config.json"
+        )-> None:
+
         # Load configuration
         with open(config_path, "r") as file:
             config = json.load(file)
@@ -29,7 +34,7 @@ class PostgresDatabase:
         self.conn = None
 
 
-    def connect(self):
+    def connect(self)-> Cursor:
         """
         Creates SSH tunnel and PostgreSQL connection.
         """
@@ -56,9 +61,17 @@ class PostgresDatabase:
         print("Connected to PostgreSQL!")
 
         return self.conn.cursor()
+    
+    def commit(self)-> None:
+        """
+        Commits the current transaction to the PostgreSQL database.
+        """
+        if self.conn is None:
+            raise RuntimeError("Database connection has not been established.")
 
+        self.conn.commit()
 
-    def close(self):
+    def close(self)-> None:
         """
         Closes database resources.
         """
