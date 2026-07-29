@@ -1,19 +1,20 @@
 # 2026-07-05 MC: Created file
+# 2026-07-28 MC: Altered method for reading config settings line# 11-20
 
-# Import dependencies
 from polygon import RESTClient
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
+from pathlib import Path
 
 class PolygonClient:
-    def __init__(
-            self
-            , config_path="./Options_pipeline/config.json"
-        ) -> None:
-        
+    def __init__(self) -> None:
+        # Path to the directory containing this Python file
+        base_dir = Path(__file__).resolve().parent
+        config_path = base_dir / "config.json"
+
         # Load configuration
-        with open(config_path, "r") as file:
+        with config_path.open("r") as file:
             config = json.load(file)
         
         api_key = config["polygon"]["api key"]

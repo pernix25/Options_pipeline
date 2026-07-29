@@ -1,23 +1,24 @@
 # 2026-07-26 MC: Created file
+# 2026-07-28 MC: Altered method for reading config settings line# 16-22
 
 import psycopg
 from psycopg import Cursor
 from sshtunnel import SSHTunnelForwarder
 import json
-
+from pathlib import Path
 
 class PostgresDatabase:
     """
     Handles SSH tunnel creation and PostgreSQL connections.
     """
 
-    def __init__(
-            self
-            , config_path="./Options_pipeline/config.json"
-        )-> None:
+    def __init__(self)-> None:
+        # Path to the directory containing this Python file
+        base_dir = Path(__file__).resolve().parent
+        config_path = base_dir / "config.json"
 
         # Load configuration
-        with open(config_path, "r") as file:
+        with config_path.open("r") as file:
             config = json.load(file)
 
         # SSH information
