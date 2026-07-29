@@ -1,0 +1,23 @@
+# 2026-07-28 MC: Created file
+
+from database import PostgresDatabase
+from poly import PolygonClient
+
+class ETLPipeline:
+    def __init__(
+            self
+            , db: PostgresDatabase
+            , polygon_client: PolygonClient
+        ) -> None:
+        
+        self.db = db
+        self.polygon = polygon_client
+
+    def start(self) -> None:
+        """
+        Starts the ETL pipeline by establishing a database connection.
+
+        Creates a PostgreSQL cursor that will be used throughout the ETL
+        process for executing SQL statements.
+        """
+        self.cursor = self.db.connect()
