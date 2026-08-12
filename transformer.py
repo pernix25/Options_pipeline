@@ -148,6 +148,21 @@ class DataTransformer:
         return result
 
     def trim(self, exp_dt: str) -> None:
+        """
+        Filters both the call and put option DataFrames so that only
+        contracts matching the specified expiration date remain.
+
+        Parameters
+        ----------
+        exp_dt : str
+            The expiration date to retain. Expected in the same format
+            as the `exp_dt` column in the option DataFrames.
+
+        Returns
+        -------
+        None
+            Updates the `calls` and `puts` DataFrames in place.
+        """
         self.calls = self.calls.groupby('exp_dt').get_group(exp_dt)
         self.puts = self.puts.groupby('exp_dt').get_group(exp_dt)
 

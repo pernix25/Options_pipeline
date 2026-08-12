@@ -273,8 +273,27 @@ class PolygonClient:
             return contract_data
 
     def yesterday_stock_price(self, ticker: str) -> int:
+        """
+        Retrieve the most recent closing stock price from the previous
+        trading day.
+
+        Queries Polygon for daily stock data beginning January 1 of the
+        current year and ending yesterday. The closing price from the
+        most recent available trading day is returned as a rounded integer.
+
+        Parameters
+        ----------
+        ticker : str
+            Stock ticker symbol to retrieve historical price data for.
+
+        Returns
+        -------
+        int
+            The most recent closing stock price, rounded to the nearest
+            whole number.
+        """
         yearly_stock_data = self.client.get_aggs(
-            ticker="AAPL"
+            ticker=ticker
             , multiplier=1
             , timespan="day"
             , from_=date(date.today().year, 1, 1) # January first of this year
