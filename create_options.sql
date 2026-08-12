@@ -1,4 +1,5 @@
 /*2026-06-29 MC: Created stocks.options table
+2026-07-29 MC: Added poly_id
 
 
 
@@ -12,6 +13,7 @@ load_dts: time the record was uploaded into the table
 
 create table stocks.options(
     option_id serial primary key
+    , poly_id varchar(32)
     , stock_id INT REFERENCES stocks.stocks(stock_id)
     , strike_price decimal(6, 2)
     , exp_dt date

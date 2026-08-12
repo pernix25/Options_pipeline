@@ -31,7 +31,7 @@ class DataTransformer:
         the underlying DataFrame.
         - Returns an empty NumPy array if no contracts are loaded.
         """
-        return self.contracts['expiration'].unique()
+        return self.contracts['exp_dt'].unique()
     
     def get_opts_near_stock_price(
             self
@@ -104,7 +104,6 @@ class DataTransformer:
         # Round stock price
         stock_price = round(stock_price)
 
-
         option_type = option_type.upper()
 
         # If option type is not 'calls' or 'puts', throw value error 
@@ -122,7 +121,7 @@ class DataTransformer:
             raise ValueError(f'No {option_type} options found.')
 
         # Calculate the closest strike based on the stocks price
-        closest_strike = df.iloc[(df["strike"] - stock_price).abs().argmin()]
+        closest_strike = df.iloc[(df["strike"] - stock_price).abs().argmin()]['strike']
 
         # Grab the nth number of contracts below the closest strike price
         below = (
@@ -147,3 +146,8 @@ class DataTransformer:
         )
 
         return result
+
+    def trim(self, exp_dt: str) -> None:
+        self.calls = self.calls.groupby('exp_dt').get_group(exp_dt)
+        self.puts = self.puts.groupby('exp_dt').get_group(exp_dt)
+

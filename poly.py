@@ -6,6 +6,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
 from pathlib import Path
+from datetime import date, timedelta
 
 class PolygonClient:
     def __init__(self) -> None:
@@ -270,3 +271,16 @@ class PolygonClient:
             })
 
             return contract_data
+
+    def yesterday_stock_price(self, ticker: str) -> int:
+        yearly_stock_data = self.client.get_aggs(
+            ticker="AAPL"
+            , multiplier=1
+            , timespan="day"
+            , from_=date(date.today().year, 1, 1) # January first of this year
+            , to=date.today() - timedelta(days=1) # yesterdays date
+        )
+
+        yesterday_close = yearly_stock_data[-1].close
+
+        return round(yesterday_close)

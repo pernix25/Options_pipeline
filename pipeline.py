@@ -6,11 +6,11 @@ from poly import PolygonClient
 class ETLPipeline:
     def __init__(
             self
-            , db: PostgresDatabase
+            , database: PostgresDatabase
             , polygon_client: PolygonClient
         ) -> None:
         
-        self.db = db
+        self.db = database
         self.polygon = polygon_client
 
     def start(self) -> None:
