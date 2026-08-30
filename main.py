@@ -6,6 +6,7 @@ from pipeline import ETLPipeline
 from transformer import DataTransformer
 import json
 from pathlib import Path
+from datetime import date, timedelta
 
 def main():
     db = PostgresDatabase()
@@ -76,6 +77,56 @@ def main():
                     VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s)"""
                     , (stock_cache[ticker], row.strike, row.exp_dt, call_flag, row.poly_opt_id)
                 )
+
+    # commit inserts 
+    pipeline.db.commit()
+
+    #----------------------------------------------------#
+    # new section for getting prices
+    #----------------------------------------------------#
+
+    # refresh options cache
+    poly_id_query = "SELECT poly_id, option_id FROM stocks.options"
+    cursor.execute(poly_id_query)
+    poly_cache = {row[0] : row[1] for row in cursor.fetchall()}
+
+    # get new option contracts cache
+    options_table_query = """
+        SELECT 
+            o.poly_id
+            , s.ticker
+            , o.strike_price
+            , o.exp_dt
+            , o.call_flag
+        FROM stocks.options o
+        JOIN stocks.stocks s
+            ON o.stock_id = s.stock_id
+        WHERE exp_dt >= %s"""
+    cursor.execute(options_table_query, (date.today(), )) # execute requires a tuple or list of parameters
+    options_table = [{"polygon id" : row[0]
+                      , "ticker" : row[1]
+                      , "strike price" : row[2]
+                      , "expiration date" : row[3]
+                      , "option type" : "call" if row[4] else "put"
+                      } for row in cursor.fetchall()]
+
+    for option in options_table:
+        contract_data = pipeline.polygon.get_option_data(option["polygon id"], 1, "minute", date.today() - timedelta(days=1), date.today() - timedelta(days=1))
+
+        # if there are no orders for an opiton, the request will be None, therefore skip to next contract
+        if contract_data == None:
+            continue
+
+        for row in contract_data:
+            cursor.execute(
+                """
+                INSERT INTO stocks.option_market_data
+                (option_id, open_price, high_price, low_price, close_price, volume, vwap, transactions, market_dts, load_dts)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)"""
+                , (poly_cache[option["polygon id"]], row['open'], row['high'], row['low'], row['close'], row['volume'], row['vwap'], row['transactions'], row['timestamp'])
+            )
+        
+        pipeline.db.commit()
 
     # commit and close the database connection
     pipeline.db.commit()

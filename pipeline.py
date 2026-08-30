@@ -1,5 +1,8 @@
 # 2026-07-28 MC: Created file
 
+# Ideas
+# move caching, getting contract, and getting contract prices into pipeline methods
+
 from database import PostgresDatabase
 from poly import PolygonClient
 

@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 import json
 from pathlib import Path
 from datetime import date, timedelta
+import time
 
 class PolygonClient:
     def __init__(self) -> None:
@@ -247,30 +248,34 @@ class PolygonClient:
 
         contract_data =[]
 
-        for bar in self.client.get_aggs(
+        response = self.client.get_aggs(
             ticker = poly_opt_id
             , multiplier = aggregate
             , timespan = timespan
             , from_ = start_dt
             , to = end_dt
-        ):
-            
+            , limit = 50000 # allows the request to aggragate up to 50K records per page
+        )
+        
+        print(f"processing {poly_opt_id}")
+
+        for contract in response:
             contract_data.append({
-                "open": bar.open
-                , "high": bar.high
-                , "low": bar.low
-                , "close": bar.close
-                , "volume": bar.volume
-                , "vwap": bar.vwap
-                , "transactions": bar.transactions
+                "open": contract.open
+                , "high": contract.high
+                , "low": contract.low
+                , "close": contract.close
+                , "volume": contract.volume
+                , "vwap": contract.vwap
+                , "transactions": contract.transactions
                 , "timestamp": datetime.fromtimestamp(
                     # Converts Polygon epoch timestamp (milliseconds, UTC) 
                     # into America/Denver local time and formats it as a human-readable string
-                    bar.timestamp / 1000,tz=ZoneInfo("UTC")
+                    contract.timestamp / 1000,tz=ZoneInfo("UTC")
                     ).astimezone(ZoneInfo("America/Denver"))
             })
 
-            return contract_data
+        return contract_data
 
     def yesterday_stock_price(self, ticker: str) -> int:
         """
