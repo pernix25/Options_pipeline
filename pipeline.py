@@ -7,12 +7,14 @@ from database import PostgresDatabase
 from transformer import DataTransformer
 from poly import PolygonClient
 from datetime import date, timedelta
+from pathlib import Path
+import json
 
 class ETLPipeline:
     def __init__(
             self
-            , database: PostgresDatabase
-            , polygon_client: PolygonClient
+            , database = PostgresDatabase()
+            , polygon_client = PolygonClient()
         ) -> None:
         
         self.db = database
@@ -27,8 +29,51 @@ class ETLPipeline:
         """
         self.cursor = self.db.connect()
     
-    def get_option_contracts(self, tickers) -> None:
-        
+    def end(self) -> None:
+        """
+        Ends the ETL pipeline by commiting and closing the database connection.
+        """
+        self.db.commit()
+        self.db.close()
+    
+    def run(self) -> None:
+        """
+        Executes the complete options pipeline
+        """
+        self.start()
+        self.get_option_contracts()
+        self.get_option_prices()
+        self.end()
+
+    def get_option_contracts(self) -> None:
+        """
+        Retrieves and stores option contracts for the configured stock tickers.
+
+        The method:
+            - Loads the list of stock tickers from config.json.
+            - Caches existing stock IDs and option Polygon IDs from the database.
+            - Retrieves the available option chain for each ticker from Polygon.
+            - Selects an expiration date approximately one week in the future.
+            - Filters the option chain to contracts near the stock's current price.
+            - Processes both call and put contracts.
+            - Skips contracts that already exist in the database.
+            - Inserts new option contracts into the stocks.options table.
+            - Commits all new contracts to the database.
+
+        Returns:
+            None
+        """
+
+        # Path to the directory containing this Python file
+        base_dir = Path(__file__).resolve().parent
+        config_path = base_dir / "config.json"
+
+        # Load configuration
+        with config_path.open("r") as file:
+            config = json.load(file)
+
+        tickers = config["tickers"]
+
         # cache the database's stock ids
         stocks_table_query = "SELECT stock_id, ticker FROM stocks.stocks"
         self.cursor.execute(stocks_table_query)
@@ -84,7 +129,23 @@ class ETLPipeline:
         self.db.commit()
 
     def get_option_prices(self) -> None:
-        
+        """
+        Retrieves the previous day's one-minute market data for all active
+        option contracts and inserts the data into the stocks.option_market_data
+        table.
+
+        The method:
+            - Refreshes the Polygon ID to database option ID cache.
+            - Retrieves all options that have not yet expired.
+            - Requests the previous day's market data from Polygon for each option.
+            - Inserts available market data into the database.
+            - Commits the inserted data after each option is processed.
+
+        Returns:
+            None
+        """
+
+
         # refresh options cache
         poly_id_query = "SELECT poly_id, option_id FROM stocks.options"
         self.cursor.execute(poly_id_query)
